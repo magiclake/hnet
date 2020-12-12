@@ -1,11 +1,13 @@
 /*
  * @Author: magiclake
  * @Date: 2020-12-11 11:29:36
- * @LastEditTime: 2020-12-12 10:22:28
+ * @LastEditTime: 2020-12-12 11:07:07
  * @LastEditors: huhai
- * @FilePath: /src/CUdpPfserver.hpp
+ * @FilePath: /hnet/src/CPfUdp.hpp
  * @Description: 
  */
+#ifndef ________HNET____PFUDP________HPP_____________
+#define ________HNET____PFUDP________HPP_____________
 #include <netinet/in.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -317,3 +319,4 @@ namespace hnet
     };
 
 } // namespace hnet
+#endif 
