@@ -1,8 +1,8 @@
 <!--
  * @Author: 
  * @Date: 2020-12-12 10:48:01
- * @LastEditTime: 2020-12-12 10:57:41
- * @LastEditors: huhai
+ * @LastEditTime: 2020-12-12 11:25:33
+ * @LastEditors: Please set LastEditors
  * @FilePath: /hnet/README.md
  * @Description: 
 -->
@@ -12,7 +12,19 @@ net libs
 
 ### pfunix udp
 
- whole code consists of a single header file `CPfUdp.hpp`
+whole code consists of a single header file `CPfUdp.hpp`
+
+
+- build test:
+    ```bash
+    cd src && mkdir build
+    cd build
+    cmake .. && make
+    ```
+    u will find binary in build/bin.   
+        run server: `./udpPFTest -s`  
+        run client: `./udpPFTest -c "test words"`  
+
 
 - server:   
    1.  create data handler

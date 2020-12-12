@@ -1,9 +1,9 @@
 /*
  * @Author: magiclake 
  * @Date: 2020-12-12 10:05:37
- * @LastEditTime: 2020-12-12 10:21:59
- * @LastEditors: huhai
- * @FilePath: /src/Exception.h
+ * @LastEditTime: 2020-12-12 11:25:58
+ * @LastEditors: Please set LastEditors
+ * @FilePath: /hnet/src/Exception.h
  * @Description: 
  */
 #ifndef __EXCEPTION_H_INCL__
