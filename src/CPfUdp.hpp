@@ -1,7 +1,7 @@
 /*
  * @Author: magiclake
  * @Date: 2020-12-11 11:29:36
- * @LastEditTime: 2020-12-12 11:25:47
+ * @LastEditTime: 2020-12-14 13:41:30
  * @LastEditors: Please set LastEditors
  * @FilePath: /hnet/src/CPfUdp.hpp
  * @Description: 
@@ -25,10 +25,22 @@
 #include <chrono>
 #include <thread>
 #include <functional>
-#include "Exception.h"
 namespace hnet
 {
 
+    /**
+    * the class is to thrown when network error occured
+    * author IVY (2009-05-21)
+    */
+    class network_error : public std::runtime_error
+    {
+    public:
+        network_error(const std::string& msg):std::runtime_error(msg)
+        {
+
+        };
+    };
+    
     using UdpData = std::vector<unsigned char>;
     typedef struct sockaddr_un UdpId;
 
