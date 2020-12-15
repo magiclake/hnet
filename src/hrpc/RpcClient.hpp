@@ -19,7 +19,7 @@ class HRpcClient
     {
         if (data.empty())
         {
-            printf("empty data\n");
+            HENT_LOG("empty data");
             return false;
         }
 
@@ -53,7 +53,7 @@ public:
 
         if(ret.empty())
         {
-            printf("rev  failed\n");
+            HENT_LOG("rev  failed");
             return false;
         }
         RspPack response;

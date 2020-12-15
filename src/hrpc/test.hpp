@@ -30,14 +30,14 @@ namespace hnet
             {
                 if (argc <= 1)
                 {
-                    printf("usage:%s <-c/-s> [data string]\n", argv[0]);
+                    HENT_LOG("usage:%s <-c/-s> [data string]", argv[0]);
                     return -1;
                 }
                 if (strcmp(argv[1], "-c") == 0)
                 {
                     if (argc <= 2)
                     {
-                        printf("usage:%s <-c/-s> [data string]\n", argv[0]);
+                        HENT_LOG("usage:%s <-c/-s> [data string]", argv[0]);
                         return -1;
                     }
                     testClient(argc-1, ++argv);
@@ -54,7 +54,7 @@ namespace hnet
             {
                 if(argc <= 1)
                 {
-                    printf("Useage:./%s -c echo.write/echo.read [data]\n");
+                    HENT_LOG("Useage:./%s -c echo.write/echo.read [data]");
                     return;
                 }
 
@@ -70,11 +70,11 @@ namespace hnet
 
                 if (!client.call(argv[1], param,  timeOutMs, retValue))
                 {
-                    printf("rpc request fail\n");
+                    HENT_LOG("rpc request fail");
                     return;
                 }
 
-                printf("return:%s\n", &retValue[0]);
+                HENT_LOG("return:%s", &retValue[0]);
             }
 
             void testServer()

@@ -6,6 +6,7 @@
 #include <chrono>
 #include <exception>
 #include <sstream>
+#include <memory>
 #include "../CPfUdp.hpp"
 #include "HRpcServiceProcessor.hpp"
 #include "services/IRpcService.hpp"
@@ -22,6 +23,20 @@ public:
     {
         processor = new HRpcServiceProcessor();
         udpServer = new hnet::pfunix_udp::CUdpPFUnixServer(path,processor);
+    }
+
+    virtual ~HRpcServer(){
+        if(udpServer != nullptr)
+        {
+            delete udpServer;
+            udpServer = nullptr;
+        }
+
+        if(processor != nullptr)
+        {
+            delete  processor;
+            processor = nullptr;
+        }
     }
 
     bool add(services::IRpcService *service)

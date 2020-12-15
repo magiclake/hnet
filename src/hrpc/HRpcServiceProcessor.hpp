@@ -17,47 +17,67 @@ class HRpcServiceProcessor : public hnet::pfunix_udp::UdpServerEvent
 {
 protected:
     std::vector<services::IRpcService *>serviceList;
-    bool sendBack(const  std::string &data)
+    bool doResponse(const RspPack &data)
     {
         PfudpAdapter adt;
-        auto udata = adt.toData(data);
+        auto udata = adt.toData(data.toJson());
         return response(udata);
+    }
+
+    void doService(const RequestPack &req, RspPack &rsp)
+    {
+        bool found = false;
+        for(auto &service : serviceList)
+        {
+            if(service->isMine(req.name))
+            {
+                rsp.result = service->exec(req, rsp);
+                found = true;
+                break;
+            }
+        }
+        if(!found)
+        {
+            rsp.reason = "unfound service";
+        }
+    }
+
+    void getResponse(const hnet::pfunix_udp::UdpData &data,
+                 RspPack &rsp)
+    {
+        try {
+            PfudpAdapter adt;
+            std::string str = adt.toString(data);
+            rsp.result = false;
+            RequestPack req;
+            if(!req.fromJson(str))
+            {
+                rsp.name = req.name+".rsp";
+                rsp.reason="invalid json";
+            }
+            rsp.name = req.name+".rsp";
+            doService(req,rsp);
+
+        } catch (std::exception &err) {
+            rsp.result = false;
+            rsp.reason = err.what();
+        }
     }
 
 public:
     HRpcServiceProcessor():hnet::pfunix_udp::UdpServerEvent()
     {
-        printf("rsp %p 1\n", responseFunction);
     }
 
     virtual bool dataRxEvent(const hnet::pfunix_udp::UdpData &data)
     {
-        printf("rsp %p 2\n", responseFunction);
         if(data.size() == 0)
         {
             return false;
         }
-        PfudpAdapter adt;
-        auto str = adt.toString(data);
-        RequestPack req;
-        if(!req.fromJson(str))
-        {
-            return false;
-        }
-
         RspPack rsp;
-        rsp.name = req.name+".rsp";
-        rsp.result = false;
-        for(auto &service : serviceList)
-        {
-            rsp.result = service->exec(req, rsp);
-        }
-        printf("HRpcServiceProcessor exec ret\n" );
-        auto outString = rsp.toJson();
-        printf("HRpcServiceProcessor tojson\n" );
-        auto outData = adt.toData(outString);
-        printf("HRpcServiceProcessor response:%s %d\n",outString.c_str(),outData.size() );
-        return response(outData);
+        getResponse(data,rsp);
+        return doResponse(rsp);
     }
 
     bool add(services::IRpcService *service)

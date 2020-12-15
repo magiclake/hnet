@@ -44,7 +44,7 @@ public:
 
     virtual bool send(const std::string &streamIn) override
     {
-        printf("PfunixClientTransfer send data\n");
+        HENT_LOG("PfunixClientTransfer send data");
         return client.send(toData(streamIn));
     }
 
@@ -53,7 +53,7 @@ public:
         hnet::pfunix_udp::UdpData data;
         if(!client.recv(timeOutMs, data))
         {
-            printf("PfunixClientTransfer recive data error\n");
+            HENT_LOG("PfunixClientTransfer recive data error");
             return false;
         }
         streamOut = toString(data);

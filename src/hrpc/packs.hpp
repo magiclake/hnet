@@ -7,6 +7,7 @@
 #include <exception>
 #include <sstream>
 #include "../json.hpp"
+#include "../log.h"
 namespace hnet
 {
     namespace hrpc
@@ -38,7 +39,7 @@ namespace hnet
                 }
                 catch(nlohmann::json::exception &e )
                 {
-                    printf("fromJson error %s\n",e.what());
+                    HENT_LOG("fromJson error %s",e.what());
                     return false;
                 }
             }
@@ -48,16 +49,18 @@ namespace hnet
         struct RspPack
         {
             std::string name;
+            std::string reason;
             bool result;
             RpcData data;
         public:
-            std::string toJson()
+            std::string toJson() const
             {
                 using namespace nlohmann;
                     nlohmann::json j ;
                     j["name"] = name;
                     j["data"] = data;
                     j["result"] = result;
+                    j["reason"] = reason;
                     return j.dump();
             }
 
@@ -70,11 +73,12 @@ namespace hnet
                     j.at("name").get_to(name);
                     j.at("data").get_to(data);
                     j.at("result").get_to(result);
+                    j.at("reason").get_to(reason);
                     return true;
                 }
                 catch(nlohmann::json::exception &e )
                 {
-                    printf("fromJson error %s\n",e.what());
+                    HENT_LOG("fromJson error %s",e.what());
                     return false;
                 }
             }

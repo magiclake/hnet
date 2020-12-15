@@ -25,6 +25,7 @@
 #include <chrono>
 #include <thread>
 #include <functional>
+#include "log.h"
 namespace hnet
 {
 
@@ -75,7 +76,7 @@ namespace hnet
 
             bool recvFrom(UdpId &client, UdpData &data)
             {
-                char buffer[1000];
+                char buffer[4096];
                 socklen_t len = sizeof(client);
                 int nRead = recvfrom(socketfd, (char *)buffer, sizeof(buffer),
                                      0, (struct sockaddr *)&client,
@@ -84,19 +85,19 @@ namespace hnet
                 {
                     return false;
                 }
-                printf("rx:%s\n",&buffer[0]);
+                HENT_LOG("rx:%s",&buffer[0]);
                 data.assign(buffer, &buffer[nRead]);
                 return true;
             }
 
             bool sendTo(const UdpId &client, const UdpData &data)
             {
-                printf("tx:%s\n",&data[0]);
+                HENT_LOG("tx:%s",&data[0]);
                 int nSend = sendto(socketfd, &data[0], data.size(), 0,
                                    (const struct sockaddr *)&client, addrLen);
                 if (nSend <= 0)
                 {
-                    printf("send fail:%s\n", GetErrorMsg());
+                    HENT_LOG("send fail:%s", GetErrorMsg());
                     return false;
                 }
                 return true;
@@ -140,19 +141,19 @@ namespace hnet
             friend class CUdpPFUnixServer;
             void setRsp(IResponse *rsp)
             {
-                printf("set rsp %p\n",rsp);
+                HENT_LOG("set rsp %p",rsp);
                 responseFunction = rsp;
-                printf("rsp %p\n", responseFunction);
+                HENT_LOG("rsp %p", responseFunction);
             }
 
             bool response(const UdpData &data)
             {
-                printf("rsp %p\n", responseFunction);
+                HENT_LOG("rsp %p", responseFunction);
                 if (responseFunction != nullptr)
                 {
                     return responseFunction->response(data);
                 }
-                printf("no responseFunction\n");
+                HENT_LOG("no responseFunction");
                 return false;
             }
 
@@ -169,7 +170,6 @@ namespace hnet
 
             virtual bool response(const UdpData &data) override
             {
-                printf("CUdpPFUnixServer . response\n");
                 return sendTo(currentClient, data);
             }
 
@@ -216,16 +216,16 @@ namespace hnet
                     memset(&currentClient, 0, sizeof(currentClient));
                     if (recvFrom(currentClient, data))
                     {
-                        //printf("run_forever rx :%s [%s]\n", currentClient.sun_path, &data[0]);
+                        //printf("run_forever rx :%s [%s]", currentClient.sun_path, &data[0]);
                         if (dataHandler != nullptr)
                         {
                             dataHandler->dataRxEvent(data);
-                            printf("rx:%s\n",&data[0]);
+                            HENT_LOG("rx:%s",&data[0]);
                         }
                     }
                     else
                     {
-                        printf("read no data:%s\n", GetErrorMsg());
+                        HENT_LOG("read no data:%s", GetErrorMsg());
                     }
                     std::this_thread::sleep_for(std::chrono::milliseconds(10));
                 }
@@ -324,28 +324,28 @@ namespace hnet
 
                         if (!client.send(data))
                         {
-                            printf("CUdpPfClient:send data fail\n");
+                            HENT_LOG("CUdpPfClient:send data fail");
                         }
                         else
                         {
-                            printf("CUdpPfClient:send data %s OK\n", &data[0]);
+                            HENT_LOG("CUdpPfClient:send data %s OK", &data[0]);
                         }
 
                         UdpData outData;
                         //                    if (!client.recv(outData))
                         if (!client.recv(2000, outData))
                         {
-                            printf("CUdpPfClient:recv data fail\n");
+                            HENT_LOG("CUdpPfClient:recv data fail");
                         }
                         else
                         {
-                            printf("CUdpPfClient:recv data %s OK\n", &outData[0]);
+                            HENT_LOG("CUdpPfClient:recv data %s OK", &outData[0]);
                         }
                     }
                 }
                 catch (const network_error &err)
                 {
-                    printf("CUdpPfClient error:%s\n", err.what());
+                    HENT_LOG("CUdpPfClient error:%s", err.what());
                 }
             }
 
@@ -355,7 +355,7 @@ namespace hnet
             public:
                 virtual bool dataRxEvent(const UdpData &data) override
                 {
-                    printf("testServerEvent:recv data:[%s],now echo\n", &data[0]);
+                    HENT_LOG("testServerEvent:recv data:[%s],now echo", &data[0]);
                     return response(data);
                 }
             };
@@ -366,12 +366,12 @@ namespace hnet
                 {
                     testServerEvent eventHandler;
                     CUdpPFUnixServer server(PF_PATH, &eventHandler);
-                    printf("server start\n");
+                    HENT_LOG("server start");
                     server.run_forever();
                 }
                 catch (const network_error &err)
                 {
-                    printf("CUdpPfClient error:%s\n", err.what());
+                    HENT_LOG("CUdpPfClient error:%s", err.what());
                 }
             }
 
@@ -380,14 +380,14 @@ namespace hnet
             {
                 if (argc <= 1)
                 {
-                    printf("usage:%s <-c/-s> [data string]\n", argv[0]);
+                    HENT_LOG("usage:%s <-c/-s> [data string]", argv[0]);
                     return -1;
                 }
                 if (strcmp(argv[1], "-c") == 0)
                 {
                     if (argc <= 2)
                     {
-                        printf("usage:%s <-c/-s> [data string]\n", argv[0]);
+                        HENT_LOG("usage:%s <-c/-s> [data string]", argv[0]);
                         return -1;
                     }
                     udpClientTest(argv[2]);

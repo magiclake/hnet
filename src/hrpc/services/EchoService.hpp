@@ -12,7 +12,7 @@ private:
 
     bool write(const RpcData &data)
     {
-        printf("EchoService write:%s %d\n",&data[0], data.size());
+        HENT_LOG("EchoService write:%s %d",&data[0], data.size());
         currentData = data;
         return true;
     }
@@ -25,16 +25,25 @@ private:
         data.push_back('p');
         data.push_back(':');
         data.insert(data.end(),currentData.begin(),currentData.end());
-        printf("EchoService rsp:%s\n",&data[0]);
+        HENT_LOG("EchoService rsp:%s",&data[0]);
         return true;
     }
 public:
+    virtual bool isMine(const std::string &name) override
+    {
+        if(name == "echo.write" || name == "echo.read")
+        {
+            return true;
+        }
+        return false;
+    }
+
     bool exec(const RequestPack &req, RspPack &rsp)
     {
-        printf("req.tojsonJ:%s\n",req.toJson().c_str());
+        HENT_LOG("req.tojsonJ:%s",req.toJson().c_str());
         if(req.name ==  "echo.write")
         {
-            printf("write :%s\n", &req.param[0]);
+            HENT_LOG("write :%s", &req.param[0]);
             return write(req.param);
         }
         else if(req.name == "echo.read")
