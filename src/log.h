@@ -15,7 +15,7 @@ static void __inline hnet_log(const char* fmt, ...)
     printf("\n");
 }
 
-#define HENT_LOG(fmt, ...) printf("[HNET(%s).%d]:" fmt "\n" , __func__ ,__LINE__, ##__VA_ARGS__)
+#define HENT_LOG(fmt, ...) printf("[HNET:%d]:" fmt "[%s.%d]\n" , time(NULL), ##__VA_ARGS__,__FILE__,__LINE__)
 //printf("[HNET:%l.%s.%d]:",time(NULL), fmt ,__func__ ,__LINE__, ##__VA_ARGS__)
 }
 #endif

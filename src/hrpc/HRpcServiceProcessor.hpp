@@ -73,6 +73,7 @@ public:
     {
         if(data.size() == 0)
         {
+            HENT_LOG("HRpcServiceProcessor handler error:data.size() = 0");
             return false;
         }
         RspPack rsp;

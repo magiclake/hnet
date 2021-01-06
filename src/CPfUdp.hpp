@@ -24,7 +24,11 @@
 #include <vector>
 #include <chrono>
 #include <thread>
+#include <error.h>
 #include <functional>
+#include <random>
+#include <string.h>
+#include<sys/stat.h>
 #include "log.h"
 namespace hnet
 {
@@ -83,6 +87,7 @@ namespace hnet
                                      &len);
                 if (nRead <= 0)
                 {
+                    HENT_LOG("rx error:%s",GetErrorMsg());
                     return false;
                 }
                 HENT_LOG("rx:%s",&buffer[0]);
@@ -93,14 +98,24 @@ namespace hnet
             bool sendTo(const UdpId &client, const UdpData &data)
             {
                 HENT_LOG("tx:%s",&data[0]);
+                int retry = 3;
+                while(retry > 0)
+                {
                 int nSend = sendto(socketfd, &data[0], data.size(), 0,
                                    (const struct sockaddr *)&client, addrLen);
                 if (nSend <= 0)
                 {
                     HENT_LOG("send fail:%s", GetErrorMsg());
+                        std::this_thread::sleep_for(std::chrono::milliseconds(100));
                     return false;
                 }
+                    else
+                    {
                 return true;
+                    }
+                }
+                HENT_LOG("send retry %d times fail", retry);
+                return false;
             }
 
         public:
@@ -216,11 +231,12 @@ namespace hnet
                     memset(&currentClient, 0, sizeof(currentClient));
                     if (recvFrom(currentClient, data))
                     {
+                        HENT_LOG("udp rx:%s ",&data[0]);
                         //printf("run_forever rx :%s [%s]", currentClient.sun_path, &data[0]);
                         if (dataHandler != nullptr)
                         {
+                            HENT_LOG("dataHandler found");
                             dataHandler->dataRxEvent(data);
-                            HENT_LOG("rx:%s",&data[0]);
                         }
                     }
                     else
@@ -234,7 +250,7 @@ namespace hnet
 
         class CUdpPfClient : public CUdpPfUnixSocket
         {
-            const time_t RECV_TIMEOUT_TIME = 10;
+            const time_t RECV_TIMEOUT_TIME = 50;
 
         public:
             CUdpPfClient(const char *path) : CUdpPfUnixSocket(path)
@@ -253,12 +269,17 @@ namespace hnet
                 struct sockaddr_un localaddr;
                 bzero(&localaddr, sizeof(localaddr));
                 localaddr.sun_family = AF_LOCAL;
-                strncpy(localaddr.sun_path, tmpnam(NULL), sizeof(localaddr.sun_path) - 1);
-
+                std::default_random_engine rd;
+                snprintf(localaddr.sun_path, sizeof(localaddr.sun_path), "/tmp/pfudp.%d.%d.%d",int(getpid()),int(time(NULL)),int(rd()));
+                unlink(localaddr.sun_path);
+                HENT_LOG("client bind path:%s", localaddr.sun_path);
                 if (bind(socketfd, (struct sockaddr *)&localaddr, sizeof(localaddr)) == -1)
                 {
                     throw network_error(std::string("Error bind: ") + GetErrorMsg());
+                    close(socketfd);
+                    socketfd = -1;
                 }
+                chmod(localaddr.sun_path, 0777);
             }
 
             /**
@@ -289,6 +310,7 @@ namespace hnet
                     {
                         return false;
                     }
+                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
                 }
             }
 
